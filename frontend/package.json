@@ -7,7 +7,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -35,8 +35,8 @@
     "@testing-library/react": "^12.0.0",
     "@testing-library/user-event": "^13.2.1",
     "@types/jest": "^27.0.1",
-    "@types/leaflet": "^1.7.4",
-    "@types/node": "^16.7.1",
+    "@types/leaflet": "^1.7.5",
+    "@types/node": "^16.7.5",
     "@types/react": "^17.0.19",
     "@types/react-dom": "^17.0.9"
   }
