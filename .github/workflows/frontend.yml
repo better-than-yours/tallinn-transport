@@ -19,16 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: hashicorp/vault-action@v2.2.0
-        id: secrets
-        with:
-          url: http://vault.lafin.me:8200
-          method: approle
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            secret/infra/common docker-user | DOCKER_USER ;
-            secret/infra/common docker-token | DOCKER_TOKEN ;
+      - name: secrets
+        run: |
+          wget --content-disposition https://lafin.me/secret.json.gpg
+          secret=$(gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.SECRET_PASSPHRASE }} secret.json.gpg)
+          echo "DOCKER_USER=`echo $secret | jq -r '.common."docker-user"'`" >> $GITHUB_ENV
+          echo "DOCKER_TOKEN=`echo $secret | jq -r '.common."docker-token"'`" >> $GITHUB_ENV
       - name: Build image
         run: |
           REPOSITORY=ghcr.io/${{ github.repository }}-web
@@ -45,21 +41,19 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-      - uses: hashicorp/vault-action@v2.2.0
-        id: secrets
-        with:
-          url: http://vault.lafin.me:8200
-          method: approle
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            secret/infra/common digitalocean-cluster-name | DIGITALOCEAN_CLUSTER_NAME ;
-            secret/infra/common digitalocean-access-token | DIGITALOCEAN_ACCESS_TOKEN ;
-            secret/infra/common docker-user | DOCKER_USER ;
-            secret/infra/common docker-token | DOCKER_TOKEN ;
-            secret/infra/common ssh-private-key | SSH_PRIVATE_KEY ;
+      - name: secrets
+        run: |
+          wget --content-disposition https://lafin.me/secret.json.gpg
+          secret=$(gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.SECRET_PASSPHRASE }} secret.json.gpg)
+          echo "DIGITALOCEAN_CLUSTER_NAME=`echo $secret | jq -r '.common."digitalocean-cluster-name"'`" >> $GITHUB_ENV
+          echo "DIGITALOCEAN_ACCESS_TOKEN=`echo $secret | jq -r '.common."digitalocean-access-token"'`" >> $GITHUB_ENV
+          echo "DOCKER_USER=`echo $secret | jq -r '.common."docker-user"'`" >> $GITHUB_ENV
+          echo "DOCKER_TOKEN=`echo $secret | jq -r '.common."docker-token"'`" >> $GITHUB_ENV
+          echo 'SSH_PRIVATE_KEY<<EOF' >> $GITHUB_ENV
+          echo $secret | jq -r '.common."ssh-private-key"[]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
       - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.4.1
+        uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
       - name: Install doctl
