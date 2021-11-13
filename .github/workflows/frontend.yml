@@ -23,8 +23,10 @@ jobs:
         run: |
           wget --content-disposition https://lafin.me/secret.json.gpg
           secret=$(gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.SECRET_PASSPHRASE }} secret.json.gpg)
-          echo "DOCKER_USER=`echo $secret | jq -r '.common."docker-user"'`" >> $GITHUB_ENV
-          echo "DOCKER_TOKEN=`echo $secret | jq -r '.common."docker-token"'`" >> $GITHUB_ENV
+          dockerUser=`echo $secret | jq -r '.common."docker-user"'`
+          echo "::add-mask::$dockerUser"; echo "DOCKER_USER=$dockerUser" >> $GITHUB_ENV
+          dockerToken=`echo $secret | jq -r '.common."docker-token"'`
+          echo "::add-mask::$dockerToken"; echo "DOCKER_TOKEN=$dockerToken" >> $GITHUB_ENV
       - name: Build image
         run: |
           REPOSITORY=ghcr.io/${{ github.repository }}-web
@@ -45,13 +47,19 @@ jobs:
         run: |
           wget --content-disposition https://lafin.me/secret.json.gpg
           secret=$(gpg --quiet --batch --yes --decrypt --passphrase=${{ secrets.SECRET_PASSPHRASE }} secret.json.gpg)
-          echo "DIGITALOCEAN_CLUSTER_NAME=`echo $secret | jq -r '.common."digitalocean-cluster-name"'`" >> $GITHUB_ENV
-          echo "DIGITALOCEAN_ACCESS_TOKEN=`echo $secret | jq -r '.common."digitalocean-access-token"'`" >> $GITHUB_ENV
-          echo "DOCKER_USER=`echo $secret | jq -r '.common."docker-user"'`" >> $GITHUB_ENV
-          echo "DOCKER_TOKEN=`echo $secret | jq -r '.common."docker-token"'`" >> $GITHUB_ENV
-          echo 'SSH_PRIVATE_KEY<<EOF' >> $GITHUB_ENV
-          echo $secret | jq -r '.common."ssh-private-key"[]' >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+          digitaloceanClusterName=`echo $secret | jq -r '.common."digitalocean-cluster-name"'`
+          echo "::add-mask::$digitaloceanClusterName"; echo "DIGITALOCEAN_CLUSTER_NAME=$digitaloceanClusterName" >> $GITHUB_ENV
+          digitaloceanAccessToken=`echo $secret | jq -r '.common."digitalocean-access-token"'`
+          echo "::add-mask::$digitaloceanAccessToken"; echo "DIGITALOCEAN_ACCESS_TOKEN=$digitaloceanAccessToken" >> $GITHUB_ENV
+          dockerUser=`echo $secret | jq -r '.common."docker-user"'`
+          echo "::add-mask::$dockerUser"; echo "DOCKER_USER=$dockerUser" >> $GITHUB_ENV
+          dockerToken=`echo $secret | jq -r '.common."docker-token"'`
+          echo "::add-mask::$dockerToken"; echo "DOCKER_TOKEN=$dockerToken" >> $GITHUB_ENV
+          sshPrivateKey=`echo $secret | jq -r '.common."ssh-private-key"[]'`
+          while read line; do echo "::add-mask::$line"; done < <(echo "$sshPrivateKey")
+          echo "SSH_PRIVATE_KEY<<EOF
+          $sshPrivateKey
+          EOF" >> $GITHUB_ENV
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.5.3
         with:
