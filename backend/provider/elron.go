@@ -74,11 +74,11 @@ func parseElronResponse(response []byte) ([]Transport, error) {
 
 // GetElronTransport - return data from Elron
 func GetElronTransport() ([]Transport, error) {
-	response, err := http.Get("https://elron.ee/map_data.json", nil)
+	body, _, err := http.Get("https://elron.ee/map_data.json", nil)
 	if err != nil {
 		return nil, err
 	}
-	res, err := parseElronResponse(response)
+	res, err := parseElronResponse(body)
 	if err != nil {
 		return nil, err
 	}

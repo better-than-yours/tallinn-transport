@@ -72,11 +72,11 @@ func parseTallinnTransportResponse(response []byte) ([]Transport, error) {
 
 // GetTallinnTransport - return data from Tallinn transport
 func GetTallinnTransport() ([]Transport, error) {
-	response, err := http.Get("https://transport.tallinn.ee/gps.txt", nil)
+	body, _, err := http.Get("https://transport.tallinn.ee/gps.txt", nil)
 	if err != nil {
 		return nil, err
 	}
-	res, err := parseTallinnTransportResponse(response)
+	res, err := parseTallinnTransportResponse(body)
 	if err != nil {
 		return nil, err
 	}

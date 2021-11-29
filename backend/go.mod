@@ -5,5 +5,5 @@ go 1.15
 require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-pkgz/expirable-cache v0.0.3
-	github.com/lafin/http v0.0.2
+	github.com/lafin/http v0.0.3
 )
