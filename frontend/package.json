@@ -10,10 +10,13 @@
     "typescript": "^4.8.3"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "npm-run-all --parallel proxy-server start:dev",
+    "start:dev": "react-scripts start",
     "build": "react-scripts build && mv build app",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "proxy-server": "node -r esm scripts/proxy-server",
+    "lint": "eslint --ext '.ts,.js' src scripts"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -38,6 +41,17 @@
     "@types/leaflet": "^1.7.11",
     "@types/node": "^18.7.16",
     "@types/react": "^18.0.19",
-    "@types/react-dom": "^18.0.6"
+    "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
+    "cors": "^2.8.5",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "esm": "^3.2.25",
+    "express": "^4.18.1",
+    "http-proxy-middleware": "^2.0.6",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.7.1"
   }
 }
