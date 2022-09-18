@@ -1,7 +1,7 @@
+import 'maplibre-gl/dist/maplibre-gl.css';
 import './App.css';
-import 'leaflet/dist/leaflet.css';
 
-import { CircleMarker, LayerGroup, Map as LeafletMap, TileLayer } from 'leaflet';
+import { GeoJSONSource, LngLatLike, Map } from 'maplibre-gl';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Point } from './interfaces';
@@ -9,13 +9,21 @@ import { getData, preparePointsToMap } from './providers';
 
 const App: React.FunctionComponent = () => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [markers, setMarkers] = useState<LayerGroup | null>(null);
-
+  const [map, setMap] = useState<Map>();
+  const [location, setLocation] = useState<GeolocationCoordinates>();
   const [points, setPoints] = useState<Point[]>([]);
 
   useEffect(() => {
     addData();
-    setInterval(() => addData(), 2000);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setLocation(pos.coords),
+      (e) => console.warn(`ERROR(${e.code}): ${e.message}`),
+      { timeout: 5000 },
+    );
+    const timer = setInterval(() => addData(), 2000);
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   async function addData() {
@@ -23,53 +31,102 @@ const App: React.FunctionComponent = () => {
     setPoints(await preparePointsToMap(data));
   }
 
-  function getColor(type: number) {
-    switch (type) {
-      case 1:
-        return 'blue';
-      case 2:
-        return 'green';
-      case 3:
-        return 'red';
-      case 4:
-        return 'orange';
-    }
-  }
+  const locationPoint = {
+    type: 'Point',
+    coordinates: [],
+  } as GeoJSON.Point;
+  const pointCollection = {
+    type: 'FeatureCollection',
+    features: [],
+  } as GeoJSON.FeatureCollection;
 
   useEffect(() => {
     if (mapRef.current) {
-      const map = new LeafletMap(mapRef.current);
-      map.setView([59.436962, 24.753574], 13);
-      const tileLayer = new TileLayer(
-        'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
-        {
-          attribution:
-            'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-          id: 'mapbox/light-v10',
-          accessToken: 'pk.eyJ1IjoibGFmaW4iLCJhIjoiY2tjZ203MXljMGM2ajJ5cWszMG1wY2ExdCJ9.cPdi63ptWIqYt6MRLMseVg',
-        },
-      );
-      map.addLayer(tileLayer);
-      const markersLayer = new LayerGroup();
-      map.addLayer(markersLayer);
-      setMarkers(markersLayer);
+      const map = new Map({
+        container: mapRef.current,
+        style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=mVHQWR5Hlz1ibUQkpoRM',
+        center: [24.753574, 59.436962],
+        zoom: 12,
+      });
+      map.on('load', function () {
+        setMap(map);
+        map.addSource('location', {
+          type: 'geojson',
+          data: locationPoint,
+        });
+        map.addLayer({
+          id: 'location',
+          type: 'circle',
+          source: 'location',
+          paint: {
+            'circle-radius': 6,
+            'circle-color': 'gray',
+          },
+        });
+        map.addSource('points', {
+          type: 'geojson',
+          data: pointCollection,
+        });
+        map.addLayer({
+          id: 'point-number',
+          type: 'symbol',
+          source: 'points',
+          layout: {
+            'text-field': '{lineNumber}',
+            'text-size': 10,
+            'text-offset': [0.7, -0.5],
+          },
+        });
+        map.addLayer({
+          id: 'point-circle',
+          type: 'circle',
+          source: 'points',
+          paint: {
+            'circle-radius': 3,
+            'circle-color': [
+              'case',
+              ['==', ['get', 'vehicleType'], 1],
+              'blue',
+              ['==', ['get', 'vehicleType'], 2],
+              'green',
+              ['==', ['get', 'vehicleType'], 3],
+              'red',
+              ['==', ['get', 'vehicleType'], 4],
+              'orange',
+              'black',
+            ],
+          },
+        });
+      });
     }
   }, [mapRef]);
 
   useEffect(() => {
-    if (markers) {
-      markers.eachLayer((marker) => marker.remove());
-      for (const point of points) {
-        const circleMarker = new CircleMarker([point.latitude, point.longitude], {
-          radius: 3,
-          fill: true,
-          weight: 1,
-          color: getColor(point.vehicleType),
-        });
-        markers.addLayer(circleMarker);
-      }
+    if (map && location) {
+      locationPoint.coordinates = [location.longitude, location.latitude];
+      const source = map.getSource('location') as GeoJSONSource;
+      source.setData(locationPoint);
+      map.jumpTo({ center: locationPoint.coordinates as LngLatLike, zoom: 13 });
     }
-  }, [points, markers]);
+  }, [location, map]);
+
+  useEffect(() => {
+    if (map && points) {
+      pointCollection.features = [
+        ...points.map((point) => ({
+          type: 'Feature',
+          id: `point-${point.vehicleType}-${point.vehicleNumber}`,
+          properties: { vehicleType: point.vehicleType, lineNumber: point.lineNumber },
+          geometry: {
+            type: 'Point',
+            coordinates: [point.longitude, point.latitude],
+          },
+        })),
+      ] as GeoJSON.Feature[];
+      const source = map.getSource('points') as GeoJSONSource;
+      source.setData(pointCollection);
+    }
+  }, [points, map]);
 
   return <div ref={mapRef} />;
 };
