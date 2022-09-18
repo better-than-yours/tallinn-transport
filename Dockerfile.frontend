@@ -12,7 +12,7 @@ RUN cd /srv/frontend && \
 FROM umputun/reproxy
 
 ENV TZ=Europe/Tallinn
-COPY --from=build-frontend /srv/frontend/app /web
+COPY --from=build-frontend /srv/frontend/build /web
 
 EXPOSE 8000
 
