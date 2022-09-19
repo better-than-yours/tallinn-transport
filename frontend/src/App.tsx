@@ -1,7 +1,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './App.css';
 
-import { GeoJSONSource, LngLatLike, Map } from 'maplibre-gl';
+import { GeoJSONSource, GeolocateControl, Map } from 'maplibre-gl';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Point } from './interfaces';
@@ -10,19 +10,13 @@ import { getData, preparePointsToMap } from './providers';
 const App: React.FunctionComponent = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<Map>();
-  const [location, setLocation] = useState<GeolocationCoordinates>();
   const [points, setPoints] = useState<Point[]>([]);
 
   useEffect(() => {
     addData();
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setLocation(pos.coords),
-      (e) => console.warn(`ERROR(${e.code}): ${e.message}`),
-      { timeout: 5000 },
-    );
-    const timer = setInterval(() => addData(), 2000);
+    const requestDataTimer = setInterval(() => addData(), 2_000);
     return () => {
-      clearInterval(timer);
+      clearInterval(requestDataTimer);
     };
   }, []);
 
@@ -48,6 +42,13 @@ const App: React.FunctionComponent = () => {
         center: [24.753574, 59.436962],
         zoom: 12,
       });
+      map.addControl(
+        new GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          fitBoundsOptions: { maxZoom: 13 },
+          trackUserLocation: true,
+        }),
+      );
       map.on('load', function () {
         setMap(map);
         map.addSource('location', {
@@ -100,15 +101,6 @@ const App: React.FunctionComponent = () => {
       });
     }
   }, [mapRef]);
-
-  useEffect(() => {
-    if (map && location) {
-      locationPoint.coordinates = [location.longitude, location.latitude];
-      const source = map.getSource('location') as GeoJSONSource;
-      source.setData(locationPoint);
-      map.jumpTo({ center: locationPoint.coordinates as LngLatLike, zoom: 13 });
-    }
-  }, [location, map]);
 
   useEffect(() => {
     if (map && points) {
