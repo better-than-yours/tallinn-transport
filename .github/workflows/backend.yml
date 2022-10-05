@@ -18,9 +18,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-      - uses: golangci/golangci-lint-action@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+      - uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           working-directory: backend
@@ -48,7 +48,7 @@ jobs:
           - { arch: amd64, goarch: amd64, goarm: "" }
           - { arch: arm64, goarch: arm64, goarm: "" }
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: secrets
         run: |
           wget --content-disposition https://lafin.me/secret.json.gpg
@@ -74,7 +74,7 @@ jobs:
       DOCKER_CLI_EXPERIMENTAL: enabled
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: secrets
         run: |
           wget --content-disposition https://lafin.me/secret.json.gpg
@@ -96,7 +96,7 @@ jobs:
     needs: [lint, build]
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: secrets
         run: |
           wget --content-disposition https://lafin.me/secret.json.gpg
@@ -115,7 +115,7 @@ jobs:
           $sshPrivateKey
           EOF" >> $GITHUB_ENV
       - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.5.3
+        uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
       - name: Install doctl
