@@ -7,7 +7,7 @@ RUN apk add --update python3 make g++ && \
     rm -rf /var/cache/apk/*
 RUN cd /srv/frontend && \
     npm ci && \
-    npm run build
+    NODE_OPTIONS=--openssl-legacy-provider npm run build
 
 FROM umputun/reproxy
 
