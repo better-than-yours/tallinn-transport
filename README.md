@@ -6,19 +6,3 @@
 $ go mod tidy && go get -u
 $ npx npm-check-updates -u
 ```
-
-### secrets
-
-```sh
-VAULT_ROLE_ID=
-VAULT_SECRET_ID=
-```
-
-### vault
-
-```sh
-$ vault auth enable approle
-$ vault write auth/approle/role/tallinn-transport-role secret_id_ttl=0 token_policies=common-policy
-$ vault read auth/approle/role/tallinn-transport-role/role-id
-$ vault write -f auth/approle/role/tallinn-transport-role/secret-id
-```
