@@ -6,6 +6,8 @@ github.com/go-pkgz/expirable-cache v1.0.0 h1:ns5+1hjY8hntGv8bPaQd9Gr7Jyo+Uw5SLyI
 github.com/go-pkgz/expirable-cache v1.0.0/go.mod h1:GTrEl0X+q0mPNqN6dtcQXksACnzCBQ5k/k1SwXJsZKs=
 github.com/lafin/http v0.0.4 h1:wQxu66l35MKYHYQLka7sRG/Q2BkREyz8hOSNV9xRyaU=
 github.com/lafin/http v0.0.4/go.mod h1:tz10JB9QcOQ1mIvMXzlr/EWWStQk/0m/gWaAvVk27FM=
+github.com/lafin/http v0.0.5 h1:85hZeKYRbIail42sx6nPl9SwlM9s3kj3M4Lc/Sidfz0=
+github.com/lafin/http v0.0.5/go.mod h1:tz10JB9QcOQ1mIvMXzlr/EWWStQk/0m/gWaAvVk27FM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
